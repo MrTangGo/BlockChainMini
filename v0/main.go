@@ -19,7 +19,6 @@ func main() {
 	bc := NewBlockChain()
 	bc.AddBlock("Hello Itcast")
 	bc.AddBlock("Hello 航头")
-	bc.AddBlock("Hello 航头1")
 
 	for i, block := range bc.blocks {
 		fmt.Printf("============== 区块高度：%d ===========\n", i)

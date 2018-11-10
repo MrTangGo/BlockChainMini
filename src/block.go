@@ -44,8 +44,10 @@ func NewBlock(data string, prevHash []byte) *Block {
 	//通过工作量证明的方法得到hash与随机数
 	pow:=NewProofOfWork(block)
 	hash, nonce := pow.Run()
+
 	block.Hash=hash
 	block.Nonce=nonce
+
 
 	return &block
 }

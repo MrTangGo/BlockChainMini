@@ -41,8 +41,12 @@ func NewBlock(data string, prevHash []byte) *Block {
 		Data:          []byte(data),
 	}
 
-	//自己实现一个计算哈希的方法，v2就会被pow替代
-	block.SetHash()
+	//通过工作量证明的方法得到hash与随机数
+	pow:=NewProofOfWork(block)
+	hash, nonce := pow.Run()
+	block.Hash=hash
+	block.Nonce=nonce
+
 	return &block
 }
 

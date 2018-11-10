@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
+	"encoding/gob"
 )
 
 //data , prevHash, Hash
@@ -47,16 +48,6 @@ func NewBlock(data string, prevHash []byte) *Block {
 }
 
 func (block *Block) SetHash() {
-	//将区块的各个字段拼接成一个[]byte{}
-	//var info []byte
-	//info = append(info, Uint2Byte(block.Version)...)
-	//info = append(info, block.PrevBlockHash...)
-	//info = append(info, block.MerkelRoot...)
-	//info = append(info, Uint2Byte(block.TimeStamp)...)
-	//info = append(info, Uint2Byte(block.Difficulty)...)
-	//info = append(info, Uint2Byte(block.Nonce)...)
-	//info = append(info, block.Data...)
-
 	//使用Join代替append
 	bytesArray := [][]byte{
 		Uint2Byte(block.Version),
@@ -87,3 +78,34 @@ func Uint2Byte(num uint64) []byte {
 
 	return buffer.Bytes()
 }
+
+func (block *Block) Serialize() []byte {
+	var buffer bytes.Buffer
+
+	//1. 定义编码器
+	encoder := gob.NewEncoder(&buffer)
+	//2. 使用编码器编码
+
+	err := encoder.Encode(block)
+	// 一定要记得校验
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return buffer.Bytes()
+}
+
+//对区块的字节流进行解码, 返回Block
+func Deserialize(data []byte) *Block {
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	var block Block
+
+	//2. 对传过来字节流进行解码
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &block
+}
+

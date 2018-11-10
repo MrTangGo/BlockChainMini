@@ -40,7 +40,7 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 	for {
 		//通过prepareDate获取挖矿要用到的相数据，再挖矿
 		info := pow.prepareDate(nonce)
-		curtBlockHash:=sha256.Sum256(info)
+		curtBlockHash =sha256.Sum256(info)
 
 		//判断hash:1.hash->big.int 2..Cmp
 		var currentHashInt big.Int
@@ -53,6 +53,8 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 			nonce++
 		}
 	}
+
+	fmt.Println(curtBlockHash[:],nonce)
 	return curtBlockHash[:],nonce
 }
 

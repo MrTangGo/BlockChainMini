@@ -40,7 +40,7 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 	for {
 		//通过prepareDate获取挖矿要用到的相数据，再挖矿
 		info := pow.prepareDate(nonce)
-		curtBlockHash =sha256.Sum256(info)
+		curtBlockHash = sha256.Sum256(info)
 
 		//判断hash:1.hash->big.int 2..Cmp
 		var currentHashInt big.Int
@@ -54,12 +54,11 @@ func (pow *ProofOfWork) Run() ([]byte, uint64) {
 		}
 	}
 
-	fmt.Println(curtBlockHash[:],nonce)
-	return curtBlockHash[:],nonce
+	return curtBlockHash[:], nonce
 }
 
-func (pow *ProofOfWork)prepareDate(nonce uint64)[]byte  {
-	block:=pow.block
+func (pow *ProofOfWork) prepareDate(nonce uint64) []byte {
+	block := pow.block
 	//需要hash的数据
 	curtBlockArray := [][]byte{
 		Uint2Byte(block.Version),
@@ -72,4 +71,14 @@ func (pow *ProofOfWork)prepareDate(nonce uint64)[]byte  {
 	}
 	info := bytes.Join(curtBlockArray, []byte{})
 	return info
+}
+
+func (pow *ProofOfWork) IsValid() bool {
+	info := pow.prepareDate(pow.block.Nonce)
+	hash := sha256.Sum256(info)
+
+	var tempInt big.Int
+	tempInt.SetBytes(hash[:])
+
+	return tempInt.Cmp(pow.target) == -1
 }

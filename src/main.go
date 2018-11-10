@@ -26,5 +26,8 @@ func main() {
 		fmt.Printf("PrevBlockHash :%x\n", block.PrevBlockHash)
 		fmt.Printf("Hash :%x\n", block.Hash)
 		fmt.Printf("Data :%s\n", block.Data)
+		//校验函数
+		pow := NewProofOfWork(*block)
+		fmt.Printf("IsVald:%t\n",pow.IsValid())
 	}
 }

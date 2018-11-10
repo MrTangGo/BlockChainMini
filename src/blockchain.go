@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"log"
 )
 
 const blockChainName = "blockChain.db"
@@ -20,6 +21,53 @@ type BlockChain struct {
 	lastHash []byte
 }
 
+//创建一个新的区块链
+func CreateBlockChain() *BlockChain {
+	if isDbExist() {
+		fmt.Printf("区块链已经存在!\n")
+		os.Exit(1)
+	}
+
+	var lastHash []byte
+	db, err := bolt.Open(blockChainName, 0600, nil)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		//2. 找到我们的桶，通过桶的名字
+		// Returns nil if the bucket does not exist.
+		bucket := tx.Bucket([]byte(blockBucket))
+
+		//如果没有找到，先创建
+		if bucket == nil {
+			bucket, err = tx.CreateBucket([]byte(blockBucket))
+			if err != nil {
+				log.Panic(err)
+			}
+
+			//3. 写数据
+			//在创建区块链的时候，添加一个创世块genesisBlock
+			genesisBlock := NewBlock(genesisInfo, []byte{})
+			err = bucket.Put(genesisBlock.Hash, genesisBlock.Serialize() /*将区块序列化成字节流*/)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			//一定要记得更新"lastHashKey" 这个key对应的值，最后一个区块的哈希
+			err = bucket.Put([]byte(lastHashKey), genesisBlock.Hash)
+
+			//更新内存中最后区块哈希值
+			lastHash = genesisBlock.Hash
+		}
+
+		return nil
+	})
+
+	return &BlockChain{db, lastHash}
+}
+
 //定义一个创建区块链的方法
 func NewBlockChain() *BlockChain {
 	var lastHash []byte
@@ -29,34 +77,16 @@ func NewBlockChain() *BlockChain {
 		logs.Error(err)
 	}
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		//2.通过桶的名字，找到桶
 		bucket:=tx.Bucket([]byte(blockBucket))
 		//如果没有
 		if bucket == nil {
-			bucket, err = tx.CreateBucket([]byte(blockBucket))
-			if err!=nil{
-				logs.Error(err)
-			}
-			//3.写数据
-			//创建区块的时候添加一个创世区块
-			genesisBlock := NewBlock(genesisInfo, []byte{})
-			err = bucket.Put([]byte(genesisBlock.Hash),  genesisBlock.Serialize() /*将区块序列化成字节流*/)
-			if err!=nil{
-				logs.Error(err)
-			}
-			//更新最后一个区块的哈希
-			err = bucket.Put([]byte(lastHashKey),genesisBlock.Hash)
-			if err!=nil{
-				logs.Error(err)
-			}
-
-			//更新内存中的最后一个区块的hash值
-			lastHash = genesisBlock.Hash
-		}else{
-			//如果bucket存在，直接Get回来就可以
-			lastHash = bucket.Get([]byte(lastHashKey))
+			fmt.Printf("获取区块时不应该为空")
 		}
+
+		lastHash = bucket.Get([]byte(lastHashKey))
+
 		return nil
 	})
 
@@ -150,5 +180,14 @@ func (bc *BlockChain) PrintChain() {
 			break
 		}
 	}
+}
+
+//判断区块链文件是否存在
+func isDbExist() bool {
+	if _, err := os.Stat(blockChainName); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
 

@@ -14,7 +14,6 @@ package main
 //6. 重构代码
 
 func main() {
-	bc := NewBlockChain()
-	bc.AddBlock("Hello Itcast")
-	bc.PrintChain()
+	cli := CLI{}
+	cli.Run()
 }

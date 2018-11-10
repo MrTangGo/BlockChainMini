@@ -15,17 +15,11 @@ const genesisInfo = "2009年1月3日，财政大臣正处于实施第二轮银�
 type Block struct {
 	Version       uint64 //版本号
 	PrevBlockHash []byte //前区块哈希值
-
 	MerkelRoot []byte //这是一个哈希值，后面v5用到
-
 	TimeStamp uint64 //时间戳，从1970.1.1到现在的秒数
-
 	Difficulty uint64 //通过这个数字，算出一个哈希值：0x00010000000xxx
-
 	Nonce uint64 // 这是我们要找的随机数，挖矿就找证书
-
 	Hash []byte //当前区块哈希值, 正常的区块不存在，我们为了方便放进来
-
 	Data []byte //数据本身，区块体，先用字符串表示，v4版本的时候会引用真正的交易结构
 }
 

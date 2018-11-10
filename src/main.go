@@ -29,7 +29,7 @@ func main() {
 		fmt.Printf("MerkelRoot:%x\n",block.MerkelRoot)
 
 		timeFormat := time.Unix(int64(block.TimeStamp), 0).Format("2006-01-02 15:04:05")
-		fmt.Printf("时间戳: %s\n", timeFormat)
+		fmt.Printf("TimeStamp: %s\n", timeFormat)
 
 		fmt.Printf("Difficulty:%d\n",block.Difficulty)
 		fmt.Printf("Nonce:%d\n",block.Nonce)

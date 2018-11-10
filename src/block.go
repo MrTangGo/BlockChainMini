@@ -29,7 +29,7 @@ func NewBlock(data string, prevHash []byte) *Block {
 		PrevBlockHash: prevHash,
 		MerkelRoot:    []byte{}, //先填写为空
 		TimeStamp:     uint64(time.Now().Unix()),
-		Difficulty:    0,
+		Difficulty:    difficulty,
 		Nonce:         0,        //目前不挖矿，随便写一个值
 		Hash:          []byte{}, //见SetHash函数
 		Data:          []byte(data),

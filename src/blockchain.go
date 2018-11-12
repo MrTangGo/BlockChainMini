@@ -22,7 +22,7 @@ type BlockChain struct {
 }
 
 //创建一个新的区块链
-func CreateBlockChain() *BlockChain {
+func CreateBlockChain(address string) *BlockChain {
 	if isDbExist() {
 		fmt.Printf("区块链已经存在!\n")
 		os.Exit(1)
@@ -49,7 +49,9 @@ func CreateBlockChain() *BlockChain {
 
 			//3. 写数据
 			//在创建区块链的时候，添加一个创世块genesisBlock
-			genesisBlock := NewBlock(genesisInfo, []byte{})
+			coinbase := NewCoinbaseTx(address, genesisInfo)
+			genesisBlock := NewBlock([]*Transaction{coinbase}, []byte{})
+
 			err = bucket.Put(genesisBlock.Hash, genesisBlock.Serialize() /*将区块序列化成字节流*/)
 			if err != nil {
 				log.Panic(err)
@@ -94,7 +96,7 @@ func NewBlockChain() *BlockChain {
 }
 
 //添加区块
-func (bc *BlockChain) AddBlock(data string) {
+func (bc *BlockChain) AddBlock(txs []*Transaction) {
 	//最后一个区块的哈希值,也就是新区块的前哈希值
 	prevBlockHash := bc.lastHash
 
@@ -109,7 +111,7 @@ func (bc *BlockChain) AddBlock(data string) {
 			os.Exit(1)
 		}
 		//有，写入数据
-		newBlock := NewBlock(data, prevBlockHash)
+		newBlock := NewBlock(txs, prevBlockHash)
 
 		//更新数据库
 		bucket.Put(newBlock.Hash, newBlock.Serialize())
@@ -171,7 +173,7 @@ func (bc *BlockChain) PrintChain() {
 		fmt.Printf("Difficulty :%d\n", block.Difficulty)
 		fmt.Printf("Nonce :%d\n", block.Nonce)
 		fmt.Printf("Hash :%x\n", block.Hash)
-		fmt.Printf("Data :%s\n", block.Data)
+		fmt.Printf("Data :%s\n", block.Transactions[0].TXInputs[0].Sig)
 		pow := NewProofOfWork(*block)
 		fmt.Printf("IsValid : %v\n\n", pow.IsValid())
 

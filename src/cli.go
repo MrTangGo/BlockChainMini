@@ -6,6 +6,7 @@ import (
 )
 
 const Usage = `
+
 	./blockchain createBlockChain "创建区块链"
 	./blockchain addBlock DATA   "添加数据到区块链"
 	./blockchain printChain "打印区块链"
@@ -21,7 +22,7 @@ func (cli *CLI) Run() {
 	args := os.Args
 
 	if len(args) < 2 {
-		fmt.Printf("输入参数个数错误，请检查!\n")
+		//fmt.Printf("输入参数个数错误，请检查!\n")
 		fmt.Println(Usage)
 		os.Exit(1)
 	}
@@ -32,8 +33,13 @@ func (cli *CLI) Run() {
 
 	case "createBlockChain":
 		fmt.Printf("创建区块链命令被调用!\n")
-		bc := CreateBlockChain()
-		defer bc.Db.Close()
+
+		if len(args)==3{
+			address := args[2]
+			bc := CreateBlockChain(address)
+			defer bc.Db.Close()
+		}
+
 
 	case "addBlock":
 		fmt.Printf("添加区块命令被调用!\n")
@@ -43,9 +49,9 @@ func (cli *CLI) Run() {
 		//1. 检查参数个数
 		if len(args) == 3 {
 			//2. 获取数据
-			data := args[2]
+			//data := args[2]
 			//3. 调用真正的添加区块函数
-			bc.AddBlock(data)
+			//bc.AddBlock(data)
 		} else {
 			fmt.Println("参数无效!")
 			fmt.Println(Usage)

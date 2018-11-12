@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
 	"time"
 	"bytes"
 	"encoding/binary"
@@ -16,15 +15,16 @@ const genesisInfo = "2009年1月3日，财政大臣正处于实施第二轮银�
 type Block struct {
 	Version       uint64 //版本号
 	PrevBlockHash []byte //前区块哈希值
-	MerkelRoot []byte //这是一个哈希值，后面v5用到
-	TimeStamp uint64 //时间戳，从1970.1.1到现在的秒数
-	Difficulty uint64 //通过这个数字，算出一个哈希值：0x00010000000xxx
-	Nonce uint64 // 这是我们要找的随机数，挖矿就找证书
-	Hash []byte //当前区块哈希值, 正常的区块不存在，我们为了方便放进来
-	Data []byte //数据本身，区块体，先用字符串表示，v4版本的时候会引用真正的交易结构
+	MerkelRoot    []byte //这是一个哈希值，后面v5用到
+	TimeStamp     uint64 //时间戳，从1970.1.1到现在的秒数
+	Difficulty    uint64 //通过这个数字，算出一个哈希值：0x00010000000xxx
+	Nonce         uint64 // 这是我们要找的随机数，挖矿就找证书
+	Hash          []byte //当前区块哈希值, 正常的区块不存在，我们为了方便放进来
+
+	Transactions []*Transaction
 }
 
-func NewBlock(data string, prevHash []byte) *Block {
+func NewBlock(txs []*Transaction, prevHash []byte) *Block {
 	block := Block{
 		Version:       00,
 		PrevBlockHash: prevHash,
@@ -33,37 +33,17 @@ func NewBlock(data string, prevHash []byte) *Block {
 		Difficulty:    difficulty,
 		Nonce:         0,        //目前不挖矿，随便写一个值
 		Hash:          []byte{}, //见SetHash函数
-		Data:          []byte(data),
+		Transactions:  txs,
 	}
 
 	//通过工作量证明的方法得到hash与随机数
-	pow:=NewProofOfWork(block)
+	pow := NewProofOfWork(block)
 	hash, nonce := pow.Run()
 
-	block.Hash=hash
-	block.Nonce=nonce
-
+	block.Hash = hash
+	block.Nonce = nonce
 
 	return &block
-}
-
-func (block *Block) SetHash() {
-	//使用Join代替append
-	bytesArray := [][]byte{
-		Uint2Byte(block.Version),
-		block.PrevBlockHash,
-		block.MerkelRoot,
-		Uint2Byte(block.TimeStamp),
-		Uint2Byte(block.Difficulty),
-		Uint2Byte(block.Nonce),
-		block.Data,
-	}
-
-	info := bytes.Join(bytesArray, []byte{})
-
-	//对区块的数据进行哈希运算，返回[32]byte
-	hash := sha256.Sum256(info)
-	block.Hash = hash[:]
 }
 
 //将uint转换成[]byte
@@ -108,4 +88,3 @@ func Deserialize(data []byte) *Block {
 
 	return &block
 }
-

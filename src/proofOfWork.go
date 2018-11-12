@@ -77,7 +77,7 @@ func (pow *ProofOfWork) prepareDate(nonce uint64) []byte {
 		Uint2Byte(block.TimeStamp),
 		Uint2Byte(block.Difficulty),
 		Uint2Byte(nonce),
-		block.Data,
+		//block.Data,
 	}
 	info := bytes.Join(curtBlockArray, []byte{})
 	return info

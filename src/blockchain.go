@@ -190,3 +190,75 @@ func isDbExist() bool {
 	return true
 }
 
+func (bc *BlockChain) FindMyUtxos(address string) []TXOutput{
+
+	it := bc.NewIterator()
+
+	var UTXOInfos []TXOutput
+
+	spentUTXO :=make(map[string][]int64)
+
+	//遍历区块
+	for ;;{
+		block := it.Next()
+		//遍历交易
+		for _, tx := range block.Transactions {
+			OUTPUT:
+			//遍历output
+			for i /*0, 1, 2, 3*/ , output := range tx.TXOutputs {
+				fmt.Printf("当前索引为：%d\n", i)
+
+				if address == output.PubKeyHash {
+
+					//checkout if this address is used
+					key := string(tx.TXID)
+					//检查一下这个output是否已经被用过了
+					if len(spentUTXO[key]) /*[]int64*/ != 0 {
+						fmt.Printf("当前交易里面有%s消耗过的output\n", address)
+						//spentUTXOs[0x222] = []int64{0}
+						//spentUTXOs[0x333] = []int64{0} //中间值
+						//spentUTXOs[0x333] = []int64{0, 1}
+						for _, j /*0, 1*/ := range spentUTXO[key] {
+							if int64(i) == j {
+								fmt.Printf("i==j,这个output被消耗了，不统计\n")
+								continue OUTPUT
+							}
+						}
+					}
+					UTXOInfos = append(UTXOInfos, output)
+					fmt.Printf("找到了一个属于%s的output\n", address)
+				}
+			}
+
+			//遍历input，找到这个address已经消耗过得output，标识出来, 在遍历output前检测，过滤
+			for _,input:=range tx.TXInputs{
+				if input.Sig == address{
+					fmt.Printf("%s 已经消耗的output:%d\n",address,input.Index)
+					key :=string(input.TxId)
+					spentUTXO[key]= append(spentUTXO[key],input.Index)
+				}
+			}
+		}
+
+		if len(block.PrevBlockHash) == 0 {
+			break
+		}
+	}
+	return UTXOInfos
+}
+
+func (bc *BlockChain) GetBalance(address string) {
+
+	//找到所有属于address的utxo的数组
+	utxos := bc.FindMyUtxos(address)
+
+	//总额
+	total := 0.0
+
+	for _, utxo := range utxos {
+		total += utxo.Value
+	}
+
+	fmt.Printf("%s 的余额为: %f\n", address, total)
+}
+

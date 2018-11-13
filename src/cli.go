@@ -10,6 +10,7 @@ const Usage = `
 	./blockchain createBlockChain "创建区块链"
 	./blockchain addBlock DATA   "添加数据到区块链"
 	./blockchain printChain "打印区块链"
+	./blockchian getBalance ADDRESS "获取指定地址余额"
 `
 
 //定义一个CLI，里面包含BlockChain，所有细节工作交给bc，命令的解析工作交给CLI
@@ -63,7 +64,21 @@ func (cli *CLI) Run() {
 		defer bc.Db.Close()
 		bc.PrintChain()
 
+	case "getBalance":
+		fmt.Printf("获取余额命令被调用\n")
+		checkArgs(3)
+
+		bc:= NewBlockChain()
+		bc.GetBalance(args[2])
+
 	default:
 		fmt.Printf("无效的命令，请检查!\n")
+	}
+}
+
+func checkArgs(count int) {
+	if len(os.Args) != count {
+		fmt.Println("参数无效!")
+		os.Exit(1)
 	}
 }

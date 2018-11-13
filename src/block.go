@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"log"
 	"encoding/gob"
+	"crypto/sha256"
 )
 
 //data , prevHash, Hash
@@ -35,6 +36,8 @@ func NewBlock(txs []*Transaction, prevHash []byte) *Block {
 		Hash:          []byte{}, //见SetHash函数
 		Transactions:  txs,
 	}
+
+	block.setMerkelRoot()
 
 	//通过工作量证明的方法得到hash与随机数
 	pow := NewProofOfWork(block)
@@ -87,4 +90,19 @@ func Deserialize(data []byte) *Block {
 	}
 
 	return &block
+}
+
+//创建一个简单的MerkelRoot, 使用block中的交易作为数据来源
+//只是将多个交易的哈希拼接起来，做sha256
+func (block *Block)setMerkelRoot()  {
+	var info []byte
+
+	for _, tx := range block.Transactions {
+		//只是将多个交易的哈希拼接起来，做sha256
+		info = append(info, tx.TXID...)
+	}
+
+	hash := sha256.Sum256(info)
+
+	block.MerkelRoot = hash[:]
 }

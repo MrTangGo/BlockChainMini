@@ -27,19 +27,16 @@ func CreateBlockChain(address string) *BlockChain {
 		fmt.Printf("区块链已经存在!\n")
 		os.Exit(1)
 	}
-
 	var lastHash []byte
 	db, err := bolt.Open(blockChainName, 0600, nil)
 
 	if err != nil {
 		log.Panic(err)
 	}
-
 	err = db.Update(func(tx *bolt.Tx) error {
 		//2. 找到我们的桶，通过桶的名字
 		// Returns nil if the bucket does not exist.
 		bucket := tx.Bucket([]byte(blockBucket))
-
 		//如果没有找到，先创建
 		if bucket == nil {
 			bucket, err = tx.CreateBucket([]byte(blockBucket))
